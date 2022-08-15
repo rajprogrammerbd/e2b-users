@@ -1,0 +1,1 @@
+web: node -r newrelic dist/index.js

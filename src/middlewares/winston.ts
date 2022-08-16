@@ -4,7 +4,7 @@ import * as winston from 'winston';
 
 const options = {
     db: process.env.MONGODB_ACCESS_URL as string,
-    collection: 'e2b-mailer-error-logs',
+    collection: 'e2b-user-error-logs',
     level: 'error',
     options: {
         useUnifiedTopology: true

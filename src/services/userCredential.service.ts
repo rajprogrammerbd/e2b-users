@@ -57,9 +57,9 @@ function createUser(person: IPerson): Promise<any> {
                 message: 'User created successfully',
                 user: { name: res.name, email: res.email }
             });
-        }).catch(err => {
+        }).catch(async err => {
             logger.error({ message: 'Failed to send mail' });
-            User.findOneAndRemove({ email: res.email }, (err: any) => console.error('unknown error ', err));
+            await User.findOneAndRemove({ email: res.email }, (err: any) => console.error('unknown error ', err));
             return reject(err.response.data);
         });
     });

@@ -44,7 +44,7 @@ test('POST - /auth/create - Failed to create a user', async () => {
         userName: "rajprogrammerbd",
         userType: "Admin"
     });
-
+    console.log('result ', res);
     expect(res.statusCode).toBe(404);
     expect(res.body).toEqual({
         message: 'User needs to send all required data'

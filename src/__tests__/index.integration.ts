@@ -38,7 +38,7 @@ test('GET - / - Success to retrieve homepage endpoint', async () => {
     expect(res.body).toEqual({ message: 'Hello' });
 });
 
-test('POST - /auth/create - Successfully Create an user account.', async () => {
+test('POST - /auth/create - Failed to create a user', async () => {
     const res = await defaultAgent.post('/auth/create').send({
         password: "Casino@123",
         userName: "rajprogrammerbd",

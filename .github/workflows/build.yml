@@ -14,6 +14,10 @@ jobs:
     env:
       MONGODB_ACCESS_URL: ${{ secrets.MONGODB_ACCESS_URL }}
       PORT: ${{ secrets.PORT }}
+      NEW_RELIC_APP_NAME: ${{ secrets.NEW_RELIC_APP_NAME }}
+      NEW_RELIC_LICENSE_KEY: ${{ secrets.NEW_RELIC_LICENSE_KEY }}
+      AUTHORIZATION_CODE: ${{ secrets.AUTHORIZATION_CODE }}
+      EMAIL_REPO_ACCESS_URL: ${{ secrets.EMAIL_REPO_ACCESS_URL }}
 
     steps:
       - uses: actions/checkout@v2

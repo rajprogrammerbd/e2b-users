@@ -63,8 +63,6 @@ test('POST - /auth/create - Successfully Create an user account.', async () => {
         userType: "Admin"
     });
 
-    console.log('responses ', res);
-
     expect(res.statusCode).toBe(200);
     expect(res.body).toEqual({
         success: true,

@@ -63,6 +63,8 @@ test('POST - /auth/create - Successfully Create an user account.', async () => {
         userType: "Admin"
     });
 
+    console.log('responses ', res);
+
     expect(res.statusCode).toBe(200);
     expect(res.body).toEqual({
         success: true,
@@ -79,7 +81,7 @@ test('POST - /auth/create - Successfully Create an user account.', async () => {
     });
 
     expect(userExisted.statusCode).toBe(500);
-    expect(userExisted.text).toBe('User is already exist');
+    expect(userExisted.body).toEqual({ message: "User is already exist" });
 
     await User.deleteOne({ email });
 });

@@ -11,9 +11,9 @@ async function saveUser(req: express.Request, res: express.Response) {
 
             try {
                 const response = await userCredentialService.createUser(person);
-                res.json(response);
+                res.send(response);
             } catch(err: any) {
-                res.status(500).send(err.message);
+                res.status(500).send(err);
             }
 
         } else res.status(404).send({ message: 'User needs to send all required data' });

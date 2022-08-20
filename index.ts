@@ -10,7 +10,10 @@ import colors from 'colors';
 
 Database.connect().then(() => {
   console.log(colors.italic.bold.bgGreen('Database is connected'));
-}).catch(err => logger.error(err));
+}).catch(err => {
+  console.log('Error Occured ', err);
+  logger.error(err);
+});
 
 // Importing routes
 import homepageRoutes from './src/routes/homepage.route';

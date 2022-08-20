@@ -18,6 +18,7 @@ function isAccessible(req: express.Request, res: express.Response, next: express
 
         next();
     } else {
+        console.log('Error Occured ',  'Failed to connect with the database' );
         logger.error({ message: 'Failed to connect with the database' });
         res.status(500).json({ message: "You don't have access." });
     }

@@ -19,11 +19,25 @@ async function saveUser(req: express.Request, res: express.Response) {
         } else res.status(404).send({ message: 'User needs to send all required data' });
 
     } catch (err: any) {
+        console.log('Error Occured ', err);
         logger.error(err);
         throw new Error(err);
     }
 }
 
+async function findAUser(req: express.Request, res: express.Response) {
+    const { email } = req.body;
+    if ( email !== undefined ) {
+        try {
+            const response = await userCredentialService.findUser(email);
+            res.send(response);
+        } catch(err: any) {
+            res.status(500).send(err);
+        }
+    } else res.status(404).send({ message: 'User needs to send email' });
+}
+
 export default {
     saveUser,
+    findAUser,
 }

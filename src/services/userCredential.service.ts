@@ -4,8 +4,8 @@ import Database from '../config/db.config';
 import { hashSync } from 'bcrypt';
 import logger from '../middlewares/winston';
 import { ACCESS_TYPE } from '../config/schema/user';
-import axios from 'axios';
-import { createUserText, createUserHtml } from '../utils/static';
+import axios, { AxiosError } from 'axios';
+import { createUserText, createUserHtml, FindUserResponseType } from '../utils/types';
 
 
 export const User = Database.prepare(userSchema, 'user');
@@ -18,6 +18,21 @@ interface IPerson {
     password: string;
     userName: string;
     userType: ACCESS_TYPE;
+}
+
+function findUser(email: string): Promise<FindUserResponseType | AxiosError>{
+    return new Promise(async (resolve, reject) => {
+        await User.find({ email }).then((res: any) => {
+            
+            if (res.length === 1) {
+                const { name, email, userName, AccessType } = res[0];
+                const main = { name, email, userName, AccessType };
+                
+                resolve(main);
+            } else reject({ message: "Couldn't able to find a user" });
+
+        });
+    });
 }
 
 function createUser(person: IPerson): Promise<any> {
@@ -43,6 +58,7 @@ function createUser(person: IPerson): Promise<any> {
         try {
             res = await newUser.save();
         } catch (err: any) {
+            console.log('Error Occured ', err);
             logger.error(err);
             return reject({ message: err.message });
         }
@@ -52,12 +68,14 @@ function createUser(person: IPerson): Promise<any> {
             title: createUserText,
             html: createUserHtml,
         }).then(() => {
+            console.log('axios resullt then ');
             return resolve({
                 success: true,
                 message: 'User created successfully',
                 user: { name: res.name, email: res.email }
             });
         }).catch(async err => {
+            console.log('Error Occured ',  'Failed to connect with the database' );
             logger.error({ message: 'Failed to send mail' });
             await User.findOneAndRemove({ email: res.email }, (err: any) => console.error('unknown error ', err));
             return reject(err.response.data);
@@ -66,5 +84,6 @@ function createUser(person: IPerson): Promise<any> {
 }
 
 export default {
-    createUser
+    createUser,
+    findUser,
 }

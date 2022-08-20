@@ -83,3 +83,48 @@ test('POST - /auth/create - Successfully Create an user account.', async () => {
 
     await User.deleteOne({ email });
 });
+
+test('POST - /auth/find - Find a user', async () => {
+    const name = faker.name.fullName();
+    const email = 'rajd50843@gmail.com';
+
+    // Creating an account
+    const res = await defaultAgent.post('/auth/create').send({
+        name,
+        email,
+        password: "Casino@123",
+        userName: "rajprogrammerbd",
+        userType: "Admin"
+    });
+
+    expect(res.statusCode).toBe(200);
+    expect(res.body).toEqual({
+        success: true,
+        message: 'User created successfully',
+        user: { name, email }
+    });
+
+    // Can't find a user.
+    const failedToFind = await defaultAgent.post('/auth/find').send({
+        email: faker.internet.email()
+    });
+
+    expect(failedToFind.statusCode).toBe(500);
+    expect(failedToFind.body).toEqual({
+        message: "Couldn't able to find a user"
+    });
+
+    const SuccessToFind = await defaultAgent.post('/auth/find').send({
+        email
+    });
+
+    expect(SuccessToFind.statusCode).toBe(200);
+    expect(SuccessToFind.body).toEqual({
+        name,
+        email,
+        userName: "rajprogrammerbd",
+        AccessType: "Admin"
+    });
+
+    await User.deleteOne({ email });
+});

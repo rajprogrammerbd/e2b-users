@@ -5,6 +5,8 @@ import userCredential from '../controllers/userCredential.controllers';
 
 router.post('/create', userCredential.saveUser);
 
+router.post('/find', userCredential.findAUser)
+
 /*
 router.get('/demo', passport.authenticate('jwt', { session: false }), (req, res) => {
     res.send(req.user);

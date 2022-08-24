@@ -121,10 +121,38 @@ test('POST - /auth/find - Find a user', async () => {
     expect(SuccessToFind.statusCode).toBe(200);
     expect(SuccessToFind.body).toEqual({
         name,
-        email,
+        userEmail: email,
         userName: "rajprogrammerbd",
         AccessType: "Admin"
     });
 
     await User.deleteOne({ email });
 });
+
+test('Create a user', async () => {
+    const name = faker.name.fullName();
+
+    const body = {
+        name,
+        email: 'rajd50843@gmail.com',
+        password: 'demoPassword',
+        userName: 'demoUserName',
+        userType: 'Admin'
+    }
+    const user = await defaultAgent.post('/auth/create').send(body);
+
+    const loginUser = await defaultAgent.post('/auth/login').send({ email: body.email, password: body.password });
+    
+    expect(loginUser.statusCode).toBe(200);
+    const LOGIN_ACCESS_COOKIE = `LOGIN_ACCESS_COOKIE=${loginUser.body.token}`;
+    
+    const deletedAgent = new Proxy(request(appPort), {
+        get: (target, name) => (...args: any[]) =>
+          (target as any)[name](...args).set({
+            'Authorization': process.env.AUTHORIZATION_CODE as string,
+            'Cookie': LOGIN_ACCESS_COOKIE
+        })
+    });
+
+    await deletedAgent.delete('/auth/delete').send({ email: body.email });
+}, 20000);

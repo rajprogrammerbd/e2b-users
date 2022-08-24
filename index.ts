@@ -8,6 +8,14 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import colors from 'colors';
 
+process.on('uncaughtException', err => {
+  console.log(`Uncaught Exception logged:`, err, err.stack);
+});
+
+process.on('unhandledRejection', error => {
+  console.error('unhandledRejection', error, error);
+});
+
 Database.connect().then(() => {
   console.log(colors.italic.bold.bgGreen('Database is connected'));
 }).catch(err => {

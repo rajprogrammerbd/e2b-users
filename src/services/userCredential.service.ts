@@ -1,10 +1,11 @@
 require('dotenv').config();
 import userSchema from '../config/schema/user';
 import Database from '../config/db.config';
-import { hashSync } from 'bcrypt';
+import { hashSync, compareSync } from 'bcrypt';
 import logger from '../middlewares/winston';
 import { ACCESS_TYPE } from '../config/schema/user';
 import axios, { AxiosError } from 'axios';
+import jwt from "jsonwebtoken";
 import { createUserText, createUserHtml, FindUserResponseType } from '../utils/types';
 
 
@@ -20,13 +21,13 @@ interface IPerson {
     userType: ACCESS_TYPE;
 }
 
-function findUser(email: string): Promise<FindUserResponseType | AxiosError>{
+function findUser(email: string): Promise<FindUserResponseType>{
     return new Promise(async (resolve, reject) => {
         await User.find({ email }).then((res: any) => {
             
             if (res.length === 1) {
-                const { name, email, userName, AccessType } = res[0];
-                const main = { name, email, userName, AccessType };
+                const { name, email, userName, AccessType, password } = res[0];
+                const main = { name, userEmail: email, userName, AccessType,  password};
                 
                 resolve(main);
             } else reject({ message: "Couldn't able to find a user" });
@@ -58,7 +59,6 @@ function createUser(person: IPerson): Promise<any> {
         try {
             res = await newUser.save();
         } catch (err: any) {
-            console.log('Error Occured ', err);
             logger.error(err);
             return reject({ message: err.message });
         }
@@ -68,14 +68,12 @@ function createUser(person: IPerson): Promise<any> {
             title: createUserText,
             html: createUserHtml,
         }).then(() => {
-            console.log('axios resullt then ');
             return resolve({
                 success: true,
                 message: 'User created successfully',
                 user: { name: res.name, email: res.email }
             });
         }).catch(async err => {
-            console.log('Error Occured ',  'Failed to connect with the database' );
             logger.error({ message: 'Failed to send mail' });
             await User.findOneAndRemove({ email: res.email }, (err: any) => console.error('unknown error ', err));
             return reject(err.response.data);
@@ -83,7 +81,66 @@ function createUser(person: IPerson): Promise<any> {
     });
 }
 
+function deleteUser(loggedInUser: FindUserResponseType, deleteableUser: FindUserResponseType, same: boolean = false): Promise<any> {
+    return new Promise(async (resolve, reject) => {
+        const userType = {
+            admin: 'Admin',
+            user: 'User',
+            temp: 'Temp'
+        };
+
+        try {
+            if (same) {
+                if (loggedInUser.AccessType !== userType.temp) {
+                    const d = await User.findOneAndRemove({ email: loggedInUser.userEmail });
+                    resolve({ message: `${d.name} has been deleted` });
+                } else {
+                    reject({ message: "User doesn't have permission to delete" });
+                }
+            } else {
+                if ( loggedInUser.AccessType === userType.admin ) {
+                    const d = await User.findOneAndRemove({ email: deleteableUser.userEmail });
+                    resolve({ message: `${d.name} has been deleted` });
+                } else {
+                    reject({ message: "User doesn't have permission to delete" });
+                }
+            }
+        } catch (err) {
+            reject(err);
+        }
+    });
+}
+
+function loginUser(email: string, password: string) {
+    return User.findOne({ email }).then((user: any) => {
+        if (!user) {
+            throw new Error("Couldn't able to find user");
+        }
+
+        if (!compareSync(password, user.password)) {
+            throw new Error("Incorrect passport");
+        }
+
+        const payload = {
+            email: user.email,
+            id: user._id
+        };
+
+        const token = jwt.sign(payload, process.env.JSON_PRIVATE_KEY as string, { expiresIn: '1d' });
+
+        return {
+            success: true,
+            name: user.name,
+            userEmail: user.email,
+            token: token,
+            AccessType: user.AccessType,
+        };
+    });
+}
+
 export default {
     createUser,
     findUser,
+    deleteUser,
+    loginUser
 }

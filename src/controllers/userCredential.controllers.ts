@@ -10,8 +10,11 @@ async function saveUser(req: express.Request, res: express.Response) {
             const person = { name, email, password, userName, userType };
 
             try {
-                const response = await userCredentialService.createUser(person);
-                res.send(response);
+                if (userType !== "Temp") {
+                    const response = await userCredentialService.createUser(person);
+                    res.send(response);
+                } else res.status(401).send({ message: "User doesn't have permission to create" });
+
             } catch(err: any) {
                 res.status(500).send(err);
             }
@@ -19,7 +22,6 @@ async function saveUser(req: express.Request, res: express.Response) {
         } else res.status(404).send({ message: 'User needs to send all required data' });
 
     } catch (err: any) {
-        console.log('Error Occured ', err);
         logger.error(err);
         throw new Error(err);
     }
@@ -29,15 +31,61 @@ async function findAUser(req: express.Request, res: express.Response) {
     const { email } = req.body;
     if ( email !== undefined ) {
         try {
-            const response = await userCredentialService.findUser(email);
-            res.send(response);
+            await userCredentialService.findUser(email).then((user: any) => {
+                delete user.password;
+
+                res.send(user);
+            });
         } catch(err: any) {
             res.status(500).send(err);
         }
     } else res.status(404).send({ message: 'User needs to send email' });
 }
 
+async function deleteAUser(req: express.Request, res: express.Response) {
+    const { email } = req.body;
+    if ( email !== undefined ) {
+        try {
+            let deleting_user_email: any;
+            let loggedIn_user_email: any;
+            let deleted: any;
+
+            if ( email.toLowerCase() === req.userEmail ) {
+                deleting_user_email = await userCredentialService.findUser(email);
+                loggedIn_user_email = deleting_user_email;
+                deleted = await userCredentialService.deleteUser(loggedIn_user_email, deleting_user_email, true);
+            } else {
+                deleting_user_email = await userCredentialService.findUser(email);
+                loggedIn_user_email = await userCredentialService.findUser(req.userEmail);
+                deleted = await userCredentialService.deleteUser(loggedIn_user_email, deleting_user_email, false);
+            }
+
+            res.send(deleted);
+        } catch (err) {
+            res.status(500).send(err);
+        }
+
+    } else  {
+        res.status(404).send({ message: 'User need to pass the email body' });
+    }
+}
+
+async function loginAUser(req: express.Request, res: express.Response) {
+    const { email, password } = req.body;
+    if ( email !== undefined && password !== undefined ) {
+        try {
+            await userCredentialService.loginUser(email, password).then((user: any) => {
+                res.send(user);
+            });
+        } catch(err: any) {
+            res.status(500).send({ message: err.message });
+        }
+    } else res.status(404).send({ message: 'User needs to send required data' });
+}
+
 export default {
     saveUser,
     findAUser,
+    deleteAUser,
+    loginAUser
 }

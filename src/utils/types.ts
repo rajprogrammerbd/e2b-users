@@ -3,7 +3,8 @@ export const createUserHtml = "<b>Thank you for created an account in <a href='h
 
 export interface FindUserResponseType {
     name: string;
-    email: string;
+    userEmail: string;
     userName: string;
     AccessType: string;
+    password: string;
 }

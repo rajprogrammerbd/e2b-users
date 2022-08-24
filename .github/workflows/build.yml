@@ -18,6 +18,7 @@ jobs:
       NEW_RELIC_LICENSE_KEY: ${{ secrets.NEW_RELIC_LICENSE_KEY }}
       AUTHORIZATION_CODE: ${{ secrets.AUTHORIZATION_CODE }}
       EMAIL_REPO_ACCESS_URL: ${{ secrets.EMAIL_REPO_ACCESS_URL }}
+      JSON_PRIVATE_KEY: ${{ secrets.JSON_PRIVATE_KEY }}
 
     steps:
       - uses: actions/checkout@v2

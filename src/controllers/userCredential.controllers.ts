@@ -10,8 +10,11 @@ async function saveUser(req: express.Request, res: express.Response) {
             const person = { name, email, password, userName, userType };
 
             try {
-                const response = await userCredentialService.createUser(person);
-                res.send(response);
+                if (userType !== "Temp") {
+                    const response = await userCredentialService.createUser(person);
+                    res.send(response);
+                } else res.status(401).send({ message: "User doesn't have permission to create" });
+
             } catch(err: any) {
                 res.status(500).send(err);
             }

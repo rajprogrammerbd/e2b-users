@@ -45,26 +45,29 @@ async function findAUser(req: express.Request, res: express.Response) {
 async function deleteAUser(req: express.Request, res: express.Response) {
     const { email } = req.body;
     if ( email !== undefined ) {
-        try {
-            let deleting_user_email: any;
-            let loggedIn_user_email: any;
-            let deleted: any;
-
-            if ( email.toLowerCase() === req.userEmail ) {
-                deleting_user_email = await userCredentialService.findUser(email);
-                loggedIn_user_email = deleting_user_email;
-                deleted = await userCredentialService.deleteUser(loggedIn_user_email, deleting_user_email, true);
-            } else {
-                deleting_user_email = await userCredentialService.findUser(email);
-                loggedIn_user_email = await userCredentialService.findUser(req.userEmail);
-                deleted = await userCredentialService.deleteUser(loggedIn_user_email, deleting_user_email, false);
+        if ( req.userEmail === undefined ) {
+            res.status(500).send({ message: "User needs to be login" });
+        } else {
+            try {
+                let deleting_user_email: any;
+                let loggedIn_user_email: any;
+                let deleted: any;
+    
+                if ( email.toLowerCase() === req.userEmail ) {
+                    deleting_user_email = await userCredentialService.findUser(email);
+                    loggedIn_user_email = deleting_user_email;
+                    deleted = await userCredentialService.deleteUser(loggedIn_user_email, deleting_user_email, true);
+                } else {
+                    deleting_user_email = await userCredentialService.findUser(email);
+                    loggedIn_user_email = await userCredentialService.findUser(req.userEmail);
+                    deleted = await userCredentialService.deleteUser(loggedIn_user_email, deleting_user_email, false);
+                }
+    
+                res.send(deleted);
+            } catch (err) {
+                res.status(500).send(err);
             }
-
-            res.send(deleted);
-        } catch (err) {
-            res.status(500).send(err);
         }
-
     } else  {
         res.status(404).send({ message: 'User need to pass the email body' });
     }

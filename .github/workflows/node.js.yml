@@ -11,7 +11,6 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
     env:
       MONGODB_ACCESS_URL: ${{ secrets.MONGODB_ACCESS_URL }}
@@ -37,6 +36,7 @@ jobs:
     - run: npm run test
 
   sonarcloud:
+    needs: build
     name: SonarCloud
     runs-on: ubuntu-latest
     env:
